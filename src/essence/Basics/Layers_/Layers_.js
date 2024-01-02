@@ -2518,6 +2518,9 @@ const L_ = {
             var layersGeoJSON = updateLayer.toGeoJSON(L_.GEOJSON_PRECISION)
             var features = layersGeoJSON.features
 
+            console.log('layer features before update');
+            console.log(features);
+
             if (features.length > 0) {
                 var lastFeature = features[features.length - 1]
                 // Make sure the last feature is a LineString
