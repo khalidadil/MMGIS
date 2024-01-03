@@ -43,7 +43,7 @@ crypto.createHash = (algorithm) =>
 // end hack
 
 // Source maps are resource heavy and can cause out of memory issue for large source files.
-const shouldUseSourceMap = process.env.GENERATE_SOURCEMAP === "true";
+const shouldUseSourceMap = true;
 // Some apps do not need the benefits of saving a web request, so not inlining the chunk
 // makes for a smoother build process.
 const shouldInlineRuntimeChunk = process.env.INLINE_RUNTIME_CHUNK !== "false";
@@ -66,8 +66,8 @@ const sassModuleRegex = /\.module\.(scss|sass)$/;
 // This is the production and development configuration.
 // It is focused on developer experience, fast rebuilds, and a minimal bundle.
 module.exports = function (webpackEnv) {
-  const isEnvDevelopment = webpackEnv === "development";
-  const isEnvProduction = webpackEnv === "production";
+  const isEnvDevelopment = true;
+  const isEnvProduction = false;
 
   const isEnvDevAnalyze =
     isEnvDevelopment && process.argv.includes("--analyze");
@@ -130,7 +130,7 @@ module.exports = function (webpackEnv) {
             // which in turn let's users customize the target behavior as per their needs.
             postcssNormalize(),
           ],
-          sourceMap: true,
+          sourceMap: isEnvProduction && shouldUseSourceMap,
         },
       },
     ].filter(Boolean);
@@ -139,7 +139,7 @@ module.exports = function (webpackEnv) {
         {
           loader: require.resolve("resolve-url-loader"),
           options: {
-            sourceMap: true,
+            sourceMap: isEnvProduction && shouldUseSourceMap,
           },
         },
         {
@@ -157,7 +157,11 @@ module.exports = function (webpackEnv) {
     mode: isEnvProduction ? "production" : isEnvDevelopment && "development",
     // Stop compilation early in production
     bail: isEnvProduction,
-    devtool: "source-map",
+    devtool: isEnvProduction
+      ? shouldUseSourceMap
+        ? "source-map"
+        : false
+      : isEnvDevelopment && "eval-source-map",
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.
     entry: [
@@ -405,8 +409,8 @@ module.exports = function (webpackEnv) {
                 // Babel sourcemaps are needed for debugging into node_modules
                 // code.  Without the options below, debuggers like VSCode
                 // show incorrect code and set breakpoints on the wrong lines.
-                sourceMaps: true,
-                inputSourceMap: true,
+                sourceMaps: shouldUseSourceMap,
+                inputSourceMap: shouldUseSourceMap,
               },
             },
             // "postcss" loader applies autoprefixer to our CSS.
@@ -421,7 +425,7 @@ module.exports = function (webpackEnv) {
               exclude: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: true,
+                sourceMap: isEnvProduction && shouldUseSourceMap,
                 modules: {
                   mode: "global",
                 },
@@ -438,7 +442,7 @@ module.exports = function (webpackEnv) {
               test: cssModuleRegex,
               use: getStyleLoaders({
                 importLoaders: 1,
-                sourceMap: true,
+                sourceMap: isEnvProduction && shouldUseSourceMap,
                 modules: {
                   getLocalIdent: getCSSModuleLocalIdent,
                 },
@@ -453,7 +457,7 @@ module.exports = function (webpackEnv) {
               use: getStyleLoaders(
                 {
                   importLoaders: 3,
-                  sourceMap: true,
+                  sourceMap: isEnvProduction && shouldUseSourceMap,
                 },
                 "sass-loader"
               ),
@@ -470,7 +474,7 @@ module.exports = function (webpackEnv) {
               use: getStyleLoaders(
                 {
                   importLoaders: 3,
-                  sourceMap: true,
+                  sourceMap: isEnvProduction && shouldUseSourceMap,
                   modules: {
                     getLocalIdent: getCSSModuleLocalIdent,
                   },
